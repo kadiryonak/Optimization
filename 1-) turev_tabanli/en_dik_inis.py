@@ -19,7 +19,7 @@ class SteepestDescent:
         x = self.x0.copy()
         for i in range(self.max_iter):
             grad = self.grad(x)
-            # Gradyentin normunu hesapla; toleranstan küçükse optimuma ulaşılmış demektir, döngüyü durdur.
+            # Gradyentin normunu yani büyüklüğünü hesapla; toleranstan küçükse optimuma ulaşılmış demektir, döngüyü durdur.
             if np.linalg.norm(grad) < self.tol:
                 break
             d = -grad
@@ -29,12 +29,12 @@ class SteepestDescent:
         return x
 
 
-# =============================================
+
 # Örnek 1.1 (Arora, 1989)
 # f(x1, x2) = x1^2 + x2^2 - 2*x1*x2
 # Başlangıç noktası: (1, 0)
 # Beklenen sonuç: x_opt = (0.5, 0.5)
-# =============================================
+
 
 if __name__ == "__main__":
     # Fonksiyon tanımı

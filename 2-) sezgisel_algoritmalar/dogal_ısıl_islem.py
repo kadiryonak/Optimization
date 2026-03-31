@@ -60,7 +60,7 @@ class DogalIsilIslem:
         fark = aday_maliyet - mevcut_maliyet
         return math.exp(-fark / max(sicaklik, 1e-12))
 
-    def optimize(self, iterasyon_sayisi=1000):
+    def optimize(self, iterasyon_sayisi=1000, raporlama=False, rapor_araligi=100):
         mevcut_cozum = self.initzalite()
         mevcut_maliyet = self.maliyet_fonksiyonu(mevcut_cozum)
 
@@ -69,8 +69,16 @@ class DogalIsilIslem:
 
         sicaklik = self.baslangic_sicakligi
         maliyet_gecmisi = [en_iyi_maliyet]
+        rapor = []
 
-        for _ in range(iterasyon_sayisi):
+        if raporlama:
+            baslangic_mesaji = (
+                f"Baslangic | T={sicaklik:.4f} | mevcut={mevcut_maliyet:.6f} | en_iyi={en_iyi_maliyet:.6f}"
+            )
+            print(baslangic_mesaji)
+            rapor.append(baslangic_mesaji)
+
+        for i in range(iterasyon_sayisi):
             if sicaklik <= self.min_sicaklik:
                 break
 
@@ -78,22 +86,41 @@ class DogalIsilIslem:
             aday_maliyet = self.maliyet_fonksiyonu(aday_cozum)
 
             kabul = self.kabul_olasiligi(mevcut_maliyet, aday_maliyet, sicaklik)
+            kabul_edildi = False
             if self.random.random() < kabul:
                 mevcut_cozum = aday_cozum
                 mevcut_maliyet = aday_maliyet
+                kabul_edildi = True
 
             if mevcut_maliyet < en_iyi_maliyet:
                 en_iyi_cozum = mevcut_cozum.copy()
                 en_iyi_maliyet = mevcut_maliyet
 
             maliyet_gecmisi.append(en_iyi_maliyet)
+
+            if raporlama and ((i + 1) % rapor_araligi == 0 or i == iterasyon_sayisi - 1):
+                iterasyon_mesaji = (
+                    f"Iterasyon {i + 1:4d} | T={sicaklik:.4f} | mevcut={mevcut_maliyet:.6f} "
+                    f"| en_iyi={en_iyi_maliyet:.6f} | kabul={'Evet' if kabul_edildi else 'Hayir'}"
+                )
+                print(iterasyon_mesaji)
+                rapor.append(iterasyon_mesaji)
+
             sicaklik *= self.sogutma_katsayisi
+
+        if raporlama:
+            ozet_mesaji = (
+                f"Bitis    | T={sicaklik:.4f} | en_iyi={en_iyi_maliyet:.6f} | cozum={en_iyi_cozum}"
+            )
+            print(ozet_mesaji)
+            rapor.append(ozet_mesaji)
 
         return {
             "en_iyi_cozum": en_iyi_cozum,
             "en_iyi_maliyet": en_iyi_maliyet,
             "maliyet_gecmisi": maliyet_gecmisi,
             "final_sicaklik": sicaklik,
+            "rapor": rapor,
         }
 
 
@@ -105,7 +132,7 @@ if __name__ == "__main__":
         return x1 ** 2 + 2 * x1 * x2 - x2 ** 3
 
     optimizer = DogalIsilIslem(islem_sayisi=2, maliyet_fonksiyonu=amac_fonksiyonu, random_seed=42)
-    sonuc = optimizer.optimize(iterasyon_sayisi=1000)
+    sonuc = optimizer.optimize(iterasyon_sayisi=1000, raporlama=True, rapor_araligi=100)
     print("En İyi Çözüm:", sonuc["en_iyi_cozum"])
     print("En İyi Maliyet:", sonuc["en_iyi_maliyet"])
     
