@@ -17,11 +17,8 @@ class ConjugateGradient:
 
     def solve(self):
         x = self.x0.copy()
-
-        # Döngü öncesi hazırlık: ilk gradyent, ilk yön ve norm
-        g = self.grad(x)
-        d = -g  # İlk iterasyonda en dik iniş ile aynı (beta=0)
-        g_norm_prev = np.linalg.norm(g)
+        d = None             # Önceki eşlenik yön
+        g_norm_prev = None   # Önceki gradyentin normu (beta hesabı için)
 
         for i in range(self.max_iter):
             grad = self.grad(x)
@@ -30,7 +27,7 @@ class ConjugateGradient:
             if g_norm < self.tol:
                 break
 
-            # Eşlenik yön hesabı: beta = (||g_t|| / ||g_t-1||)^2
+            # Eşlenik yön hesabı: beta = (||g_t|| / ||g_t-1||)^2  (Fletcher-Reeves)
             if i == 0:
                 d = -grad  # İlk adımda beta yok, en dik iniş yönü
             else:

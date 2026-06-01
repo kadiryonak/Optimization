@@ -6,15 +6,16 @@ class DogalIsilIslem:
     def __init__(
         self,
         islem_sayisi,
-        maliyet_fonksiyonu=None,
+        maliyet_fonksiyonu=lambda x: x[0] ** 2 + 2 * x[0] * x[1] - x[1] ** 3,
         alt_sinir=-10.0,
         ust_sinir=10.0,
         baslangic_sicakligi=400.0,
         sogutma_katsayisi=0.95,
+        basamak_uzunlugu=10,
         min_sicaklik=0.001,
         komsu_alt_delta=-0.5,
         komsu_ust_delta=0.5,
-        random_seed=None,
+        random_seed=42,
     ):
         self.islem_sayisi = islem_sayisi
         self.islemler = []
@@ -23,6 +24,7 @@ class DogalIsilIslem:
         self.ust_sinir = ust_sinir
         self.baslangic_sicakligi = baslangic_sicakligi
         self.sogutma_katsayisi = sogutma_katsayisi
+        self.basamak_uzunlugu = max(1, int(basamak_uzunlugu))
         self.min_sicaklik = min_sicaklik
         self.komsu_alt_delta = komsu_alt_delta
         self.komsu_ust_delta = komsu_ust_delta
@@ -33,12 +35,9 @@ class DogalIsilIslem:
     def random_islem(self):
         return self.random.uniform(self.alt_sinir, self.ust_sinir)
 
-    def initzalite(self):
+    def initialize(self):
         self.islemler = [self.random_islem() for _ in range(self.islem_sayisi)]
         return self.islemler
-
-    def initialize(self):
-        return self.initzalite()
 
     def varsayilan_maliyet(self, cozum):
         if len(cozum) != 2:
@@ -60,8 +59,8 @@ class DogalIsilIslem:
         fark = aday_maliyet - mevcut_maliyet
         return math.exp(-fark / max(sicaklik, 1e-12))
 
-    def optimize(self, iterasyon_sayisi=1000, raporlama=False, rapor_araligi=100):
-        mevcut_cozum = self.initzalite()
+    def optimize(self, iterasyon_sayisi=10000, raporlama=False, rapor_araligi=100):
+        mevcut_cozum = self.initialize()
         mevcut_maliyet = self.maliyet_fonksiyonu(mevcut_cozum)
 
         en_iyi_cozum = mevcut_cozum.copy()
@@ -106,7 +105,9 @@ class DogalIsilIslem:
                 print(iterasyon_mesaji)
                 rapor.append(iterasyon_mesaji)
 
-            sicaklik *= self.sogutma_katsayisi
+            # Basamakli sogutma: sicaklik her basamak_uzunlugu iterasyonda bir kez azaltilir.
+            if (i + 1) % self.basamak_uzunlugu == 0:
+                sicaklik *= self.sogutma_katsayisi
 
         if raporlama:
             ozet_mesaji = (
@@ -132,7 +133,7 @@ if __name__ == "__main__":
         return x1 ** 2 + 2 * x1 * x2 - x2 ** 3
 
     optimizer = DogalIsilIslem(islem_sayisi=2, maliyet_fonksiyonu=amac_fonksiyonu, random_seed=42)
-    sonuc = optimizer.optimize(iterasyon_sayisi=1000, raporlama=True, rapor_araligi=100)
+    sonuc = optimizer.optimize(iterasyon_sayisi=1500, raporlama=True, rapor_araligi=100)
     print("En İyi Çözüm:", sonuc["en_iyi_cozum"])
     print("En İyi Maliyet:", sonuc["en_iyi_maliyet"])
     
