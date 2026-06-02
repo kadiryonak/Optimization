@@ -3,4 +3,12 @@ venv/
 img/
 __pycache__/
 Optimizasyon Algoritmaları 2018.pdf
+
+# --- Telif riski: kitap/defter taramalari ve kitaptan turetilmis calisma materyalleri ---
+# (GitHub'a yanlislikla push edilmesin)
+Kitap/
 Karınca Koloni/
+Sinav Hazirlik/
+*.pdf
+*.jpeg
+*.jpg
